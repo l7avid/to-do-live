@@ -7,7 +7,7 @@ const ListOfToDo = () => {
 
     useEffect(() => {
         let listOfNotes = fetchAllNotes().then(
-            notes=>{
+            notes => {
                 let action = {
                     type: 'get-notes',
                     payload: notes
@@ -18,7 +18,7 @@ const ListOfToDo = () => {
         )
     }, [])
 
-    const fetchAllNotes = async()=> {
+    const fetchAllNotes = async () => {
         let response = await fetch(`http://localhost:8081/api/get/notes`)
         let data = response.json();
         return data;
@@ -27,17 +27,19 @@ const ListOfToDo = () => {
     const onCheckBox = async (event, note) => {
         const checked = event.currentTarget.checked;
 
-        let noteWithCheckedboxInformation = {...note, 
-        done: checked}
+        let noteWithCheckedboxInformation = {
+            ...note,
+            done: checked
+        }
 
-        let noteUpdatedPromise = await fetch(`http://localhost:8081/api/update/note`, 
-        {
-            method: 'PUT',
-            headers: {
-                'Content-type': 'application/json'
-            },
-            body: JSON.stringify(noteWithCheckedboxInformation)
-        })
+        let noteUpdatedPromise = await fetch(`http://localhost:8081/api/update/note`,
+            {
+                method: 'PUT',
+                headers: {
+                    'Content-type': 'application/json'
+                },
+                body: JSON.stringify(noteWithCheckedboxInformation)
+            })
 
         let noteUpdated = await noteUpdatedPromise.json()
 
@@ -47,11 +49,18 @@ const ListOfToDo = () => {
         })
     }
 
-    const onDelete = (note) => {
-        dispatch({
-            type: 'remove-note',
-            payload: note
-        })
+    const onDelete = async (note) => {
+        let response = await fetch(`http://localhost:8081/api/delete/note/${note.id}`,
+            {
+                method: 'DELETE',
+            })
+
+        if (response.status == 200) {
+            dispatch({
+                type: 'remove-note',
+                payload: note
+            })
+        }
     }
 
     return (
@@ -59,7 +68,7 @@ const ListOfToDo = () => {
             <h1>Actions pending to be done</h1>
             <ul>
                 {state.listOfNotes.map(note => {
-                    return <li style={note.done ? {textDecoration: 'line-through'}: {}} key={note.id}>
+                    return <li style={note.done ? { textDecoration: 'line-through' } : {}} key={note.id}>
                         {note.title} <br />
                         {note.message} <br />
                         <input onChange={(event) => onCheckBox(event, note)} type="checkbox" checked={note.done}></input>
